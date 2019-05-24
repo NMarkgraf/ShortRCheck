@@ -1,5 +1,5 @@
 # ========================================================================
-# ShortRCheck.R (Release 1.0)
+# ShortRCheck.R (Release 1.0.1)
 # =============-----------------------------------------------------------
 #
 # Copyright (C) 2019 Norman Markgraf
@@ -7,6 +7,8 @@
 # Release  Datum            Bemerkung
 # ------------------------------------------------------------------------
 # 1.0.0    24.05.2019 (nm)  Initial Commit
+# 1.0.1    24.05.2019 (nm)  "deep_check_package()" vorgesehen um die 
+#                           Funktionstüchtigkeit der Pakete zu testen.
 #
 #
 # ------------------------------------------------------------------------
@@ -50,6 +52,39 @@ write_program_notice <- function() {
     )
 }
 
+write_package_found_message <- function(package_name="") {
+    cat(
+        paste(
+            "Paket",
+            package_name,
+            "gefunden!",
+            "\n"
+        )
+    )
+}
+
+write_package_okay_message <- function(package_name="") {
+    cat(
+        paste(
+            "Paket",
+            package_name,
+            "konnte geladen werden.",
+            "\n"
+        )
+    )
+}
+
+write_package_not_found_message <- function(package_name="") {
+    cat(
+        paste(
+            "Paket",
+            package_name,
+            "wurde nicht gefunden! Bitte installieren Sie es nach und prüfen Sie erneut!",
+            "\n"
+        )
+    )
+}
+
 write_user_message <- function(error_found = FALSE) {
     if (error_found) {
         cat(
@@ -79,28 +114,41 @@ write_user_message <- function(error_found = FALSE) {
     }
 }
 
+
+deep_check_package <- function(package_name = "") {
+#    old_warn <- options()$warn
+#    options(warn=2)
+    
+    cl <- try(suppressWarnings(suppressMessages(
+            require(
+                package_name, 
+                attach.required=T, 
+                warn.conflicts=F, 
+                quietly=T, 
+                character.only = TRUE
+            )))
+          )
+    
+    if (class(cl) == "try-error") {
+        cl <- FALSE
+    }
+    
+#   try(detach(paste0("package:", package_name), character.only = TRUE))
+#    options(warn=old_warn)
+    cl
+}
+
 check_for_packages <- function(packages = packages_list) {
     error <- FALSE
     ipl <- installed.packages()[,1]
     for (pkg in packages) {
         if (pkg %in% ipl) {
-            cat(
-                paste(
-                    "Paket",
-                    pkg,
-                    "gefunden!",
-                    "\n"
-                )
-            )
+            write_package_found_message(pkg)
+            if (deep_check_package(pkg)) {
+                write_package_okay_message(pkg)
+            }
         } else {
-            cat(
-                paste(
-                    "Paket",
-                    pkg,
-                    "wurde nicht gefunden! Bitte installieren Sie es nach und prüfen Sie erneut!",
-                    "\n"
-                )
-            )
+            write_package_not_found_message(pkg)
             error <- TRUE
         }
     }
