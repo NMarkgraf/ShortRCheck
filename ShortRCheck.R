@@ -1,5 +1,5 @@
 # ========================================================================
-# ShortRCheck.R (Release 1.0.1)
+# ShortRCheck.R (Release 1.0.2)
 # =============-----------------------------------------------------------
 #
 # Copyright (C) 2019 Norman Markgraf
@@ -9,19 +9,29 @@
 # 1.0.0    24.05.2019 (nm)  Initial Commit
 # 1.0.1    24.05.2019 (nm)  "deep_check_package()" vorgesehen um die 
 #                           Funktionstüchtigkeit der Pakete zu testen.
+# 1.0.2    12.06.2019 (nm)  Liste fehlender Pakete eingebaut, die am Ende
+#                           Angezeigt wird. Kann per copy&paste für den
+#                           Packages -> Install aber nicht für den Befehl 
+#                           "install.packages()" genutzt werden.
 #
 #
 # ------------------------------------------------------------------------
 
-packages_list <- c(
+package_list <- c(
     "mosaic",
     "rmarkdown",
     "dplyr",
     "ggplot2",
-    "ggformula",
-    "gridExtra",
+    "ggformula"
+#    "gridExtra",
+)
+
+package_list_infomatik <- c(
+    package_list,
     "mosaicCalc"
 )
+
+missing_packages_list <<- c()
 
 write_copyright_notice <- function() {
     cat(
@@ -115,6 +125,31 @@ write_user_message <- function(error_found = FALSE) {
 }
 
 
+write_missing_packages_list <- function(error_found = FALSE) {
+    if (error_found) {
+        tmp <- paste(missing_packages_list, sep=", ")
+        cat(
+            paste(
+                "",
+                "Liste der noch oder neu zu installierenden Pakete:",
+                "",
+                tmp,
+                "",
+                sep = "\n"
+            )
+        )
+    }
+}
+
+
+add_package_to_missing_packages_list <- function(pkg) {
+    missing_packages_list <<- c(
+        missing_packages_list,
+        pkg
+    )
+}
+
+
 deep_check_package <- function(package_name = "") {
 #    old_warn <- options()$warn
 #    options(warn=2)
@@ -138,7 +173,7 @@ deep_check_package <- function(package_name = "") {
     cl
 }
 
-check_for_packages <- function(packages = packages_list) {
+check_for_packages <- function(packages = package_list) {
     error <- FALSE
     ipl <- installed.packages()[,1]
     for (pkg in packages) {
@@ -146,8 +181,11 @@ check_for_packages <- function(packages = packages_list) {
             write_package_found_message(pkg)
             if (deep_check_package(pkg)) {
                 write_package_okay_message(pkg)
+            } else {
+                # add_package_to_missing_packages_list(pkg)
             }
         } else {
+            add_package_to_missing_packages_list(pkg)
             write_package_not_found_message(pkg)
             error <- TRUE
         }
@@ -163,5 +201,6 @@ write_program_notice()
 write_copyright_notice()
 error_found <- check_for_packages()
 write_user_message(error_found)
+write_missing_packages_list(error_found)
 
 # ========================================================================
