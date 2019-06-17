@@ -13,6 +13,7 @@
 #                           Angezeigt wird. Kann per copy&paste für den
 #                           Packages -> Install aber nicht für den Befehl 
 #                           "install.packages()" genutzt werden.
+# 1.0.3    17.06.2019 (nm)  Zeile mit "install.packages()" für copy&paste.
 #
 #
 # ------------------------------------------------------------------------
@@ -127,13 +128,21 @@ write_user_message <- function(error_found = FALSE) {
 
 write_missing_packages_list <- function(error_found = FALSE) {
     if (error_found) {
-        tmp <- paste(missing_packages_list, sep=", ")
+        tmp <- paste(missing_packages_list, collapse=", ")
+        tmp2 <- paste0("install.packages(",
+                     paste0("\"", missing_packages_list, "\"", collapse=", "),
+                    ")")
         cat(
             paste(
                 "",
                 "Liste der noch oder neu zu installierenden Pakete:",
                 "",
                 tmp,
+                "\n",
+                "Sie können den folgenden Befehl direkt per copy&paste nutzen:",
+                "\n",
+                tmp2,
+                "\n",
                 "",
                 sep = "\n"
             )
